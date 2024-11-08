@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "454653626322",
+    "project_id": "sentrix-bb06e",
+    "storage_bucket": "sentrix-bb06e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:454653626322:android:e3e088b88c751ad0176a0b",
+        "android_client_info": {
+          "package_name": "com.example.sentrix"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvhnu8_6DVdqVLh89ochHHPWURJ6-v1XU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
