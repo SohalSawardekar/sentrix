@@ -5,3 +5,8 @@ export '/firebase_options.dart';
 export 'package:firebase_auth/firebase_auth.dart';
 export 'package:sentrix/screens/login.dart';
 export 'package:sentrix/screens/register.dart';
+export 'package:sentrix/screens/dashboard_screen.dart';
+export 'package:firebase_messaging/firebase_messaging.dart';
+export 'package:flutter_local_notifications/flutter_local_notifications.dart';
+export 'package:provider/provider.dart';
+export 'package:shared_preferences/shared_preferences.dart';

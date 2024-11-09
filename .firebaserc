@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "sentrix": "sentrix-bb06e",
+    "default": "sentrix-bb06e"
+  },
+  "targets": {},
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
+}

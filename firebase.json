@@ -1,1 +1,35 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"sentrix-bb06e","appId":"1:454653626322:android:e3e088b88c751ad0176a0b","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"sentrix-bb06e","configurations":{"android":"1:454653626322:android:e3e088b88c751ad0176a0b","web":"1:454653626322:web:da3036afb06251ac176a0b"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "sentrix-bb06e",
+          "appId": "1:454653626322:android:e3e088b88c751ad0176a0b",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "sentrix-bb06e",
+          "configurations": {
+            "android": "1:454653626322:android:e3e088b88c751ad0176a0b",
+            "web": "1:454653626322:web:da3036afb06251ac176a0b"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
+}
