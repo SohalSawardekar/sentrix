@@ -79,7 +79,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Sidebar with navigation and toggle button
           AnimatedContainer(
             width:
-                _isSidebarExpanded ? 250 : 0, // Adjust width based on expansion
+                _isSidebarExpanded ? 200 : 0, // Adjust width based on expansion
             color: Colors.grey[900],
             duration: const Duration(milliseconds: 300),
             child: _isSidebarExpanded
