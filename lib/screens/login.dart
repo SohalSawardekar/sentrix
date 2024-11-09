@@ -1,5 +1,4 @@
 import 'package:sentrix/constants/imports.dart';
-import 'package:sentrix/screens/register.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -42,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
                 context,
                 MaterialPageRoute(
                     builder: (context) =>
-                        const Homepage())); // Replace with your route
+                        const DashboardScreen())); // Replace with your route
           }
         }
       } on FirebaseAuthException catch (e) {

@@ -49,11 +49,13 @@ class _TrendsScreenState extends State<TrendsScreen> {
       _isTrendingLoading = true;
     });
     try {
-      final response = await http.get(Uri.parse('https://api.gemini.com/v1/trending_stocks'));
+      final response = await http
+          .get(Uri.parse('https://api.gemini.com/v1/trending_stocks'));
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         setState(() {
-          _trendingStocks = List<String>.from(data.map((stock) => stock['symbol']));
+          _trendingStocks =
+              List<String>.from(data.map((stock) => stock['symbol']));
         });
       } else {
         throw Exception('Failed to load trending stocks');
@@ -91,75 +93,84 @@ class _TrendsScreenState extends State<TrendsScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Section for top trending stocks
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Top Trending Stocks',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _isTrendingLoading
-                ? const Center(child: CircularProgressIndicator()) // Show loading spinner
-                : Expanded(
-                    child: ListView.builder(
-                      itemCount: _trendingStocks.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          elevation: 2,
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor:
-                                  index % 2 == 0 ? Colors.green : Colors.red,
-                              child: Icon(
-                                index % 2 == 0
-                                    ? Icons.trending_up
-                                    : Icons.trending_down,
-                                color: Colors.white,
-                              ),
-                            ),
-                            title: Text(_trendingStocks[index]),
-                            subtitle: Text(index % 2 == 0
-                                ? 'Price up by ${index + 1}%'
-                                : 'Price down by ${index + 1}%'),
-                            trailing: Text(
-                              '\$${(index + 1) * 100 + 0.50}',
-                              style: TextStyle(
-                                color: index % 2 == 0 ? Colors.green : Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            onTap: () {
-                              // Navigate to detailed stock view
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-            const Divider(),
-
-            // Sentiment Analysis Section
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.0),
-              child: Align(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Section for top trending stocks
+              const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Sentiment Analysis',
+                  'Top Trending Stocks',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
-            ),
-            _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : Expanded(
-                    child: Column(
+              const SizedBox(height: 12),
+              _isTrendingLoading
+                  ? const Center(
+                      child:
+                          CircularProgressIndicator()) // Show loading spinner
+                  : SizedBox(
+                      height: 200, // Set a fixed height to avoid overflow
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        physics:
+                            const NeverScrollableScrollPhysics(), // Prevent inner scrolling
+                        itemCount: _trendingStocks.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            elevation: 2,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor:
+                                    index % 2 == 0 ? Colors.green : Colors.red,
+                                child: Icon(
+                                  index % 2 == 0
+                                      ? Icons.trending_up
+                                      : Icons.trending_down,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              title: Text(_trendingStocks[index]),
+                              subtitle: Text(index % 2 == 0
+                                  ? 'Price up by ${index + 1}%'
+                                  : 'Price down by ${index + 1}%'),
+                              trailing: Text(
+                                '\$${(index + 1) * 100 + 0.50}',
+                                style: TextStyle(
+                                  color: index % 2 == 0
+                                      ? Colors.green
+                                      : Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              onTap: () {
+                                // Navigate to detailed stock view
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+              const Divider(),
+
+              // Sentiment Analysis Section
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Sentiment Analysis',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Column(
                       children: [
                         Card(
                           elevation: 2,
@@ -206,21 +217,21 @@ class _TrendsScreenState extends State<TrendsScreen> {
                         ),
                       ],
                     ),
-                  ),
 
-            // Section for sentiment trend chart
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Sentiment Trend Over Time',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              // Section for sentiment trend chart
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Sentiment Trend Over Time',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-            ),
-            _buildSentimentTrendChart(),
-          ],
+              _buildSentimentTrendChart(),
+            ],
+          ),
         ),
       ),
     );
