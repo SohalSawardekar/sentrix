@@ -12,7 +12,7 @@ class TrendsScreen extends StatefulWidget {
 }
 
 class _TrendsScreenState extends State<TrendsScreen> {
-  final SentimentAnalysisService _sentimentService = SentimentAnalysisService();
+  // final SentimentAnalysisService _sentimentService = SentimentAnalysisService();
   bool _isLoading = true;
   double? _sentimentScore;
   String _sentimentDescription = '';
@@ -20,28 +20,27 @@ class _TrendsScreenState extends State<TrendsScreen> {
   List<String> _trendingStocks = [];
 
   // Method to load sentiment data
-  Future<void> _loadSentiment() async {
-    setState(() {
-      _isLoading = true;
-    });
-    try {
-      final score =
-          await _sentimentService.analyzeSentiment('Market sentiment analysis');
-      setState(() {
-        _sentimentScore = score;
-        _sentimentDescription =
-            score > 0.5 ? 'Positive Sentiment' : 'Negative Sentiment';
-      });
-    } catch (e) {
-      setState(() {
-        _sentimentDescription = 'Error loading sentiment';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
+  // Future<void> _loadSentiment() async {
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
+  //   try {
+  //     final score = await analyzeSentiment('Market sentiment analysis');
+  //     setState(() {
+  //       _sentimentScore = score;
+  //       _sentimentDescription =
+  //           score > 0.5 ? 'Positive Sentiment' : 'Negative Sentiment';
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       _sentimentDescription = 'Error loading sentiment';
+  //     });
+  //   } finally {
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //   }
+  // }
 
   // Method to load trending stock data using Gemini AI
   Future<void> _loadTrendingStocks() async {
@@ -74,7 +73,7 @@ class _TrendsScreenState extends State<TrendsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSentiment();
+    // _loadSentiment();
     _loadTrendingStocks(); // Load trending stocks
   }
 
@@ -87,7 +86,7 @@ class _TrendsScreenState extends State<TrendsScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              _loadSentiment(); // Refresh sentiment data on click
+              // _loadSentiment(); // Refresh sentiment data on click
               _loadTrendingStocks(); // Refresh trending stocks data on click
             },
           ),

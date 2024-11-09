@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sentrix/screens/newspredict.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:share_plus/share_plus.dart';
@@ -287,17 +288,30 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   Widget _buildNewsSentimentBreakdown() {
-    return const Card(
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.all(16.0),
+        ),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const Newspredict()),
+          );
+          print('News Sentiment Breakdown button pressed');
+        },
+        child: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('News Sentiment Breakdown',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              'News Sentiment Breakdown',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 8),
             Text(
-                'Breakdown of sentiment from news sources related to the selected symbol.'),
+              'Breakdown of sentiment from news sources related to the selected symbol.',
+            ),
           ],
         ),
       ),
