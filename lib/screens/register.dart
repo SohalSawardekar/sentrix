@@ -1,69 +1,71 @@
-import 'package:sentrix/constants/imports.dart';
-import 'package:sentrix/screens/register.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({Key? key}) : super(key: key);
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _RegisterPageState createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isPasswordVisible = false;
-  bool _isLoading = false;
+  final _confirmPasswordController = TextEditingController();
   final _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleRegister() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
 
       try {
-        final userCredential = await _auth.signInWithEmailAndPassword(
+        final userCredential = await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
 
         if (userCredential.user != null) {
-          // Login successful, navigate to home page
+          // Send email verification
+          await userCredential.user!.sendEmailVerification();
+
           if (mounted) {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        const Homepage())); // Replace with your route
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content:
+                    Text('Registration successful! Please verify your email.'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            // Navigate to login page or home page
+            Navigator.of(context).pop(); // or navigate to your desired route
           }
         }
       } on FirebaseAuthException catch (e) {
-        // Show error message based on Firebase error code
-        String errorMessage = 'An error occurred. Please try again.';
+        String errorMessage = 'Registration failed. Please try again.';
 
         switch (e.code) {
-          case 'user-not-found':
-            errorMessage = 'No user found with this email.';
+          case 'weak-password':
+            errorMessage = 'The password provided is too weak.';
             break;
-          case 'wrong-password':
-            errorMessage = 'Wrong password provided.';
-            break;
-          case 'user-disabled':
-            errorMessage = 'This account has been disabled.';
+          case 'email-already-in-use':
+            errorMessage = 'An account already exists for this email.';
             break;
           case 'invalid-email':
             errorMessage = 'The email address is invalid.';
-            break;
-          case 'too-many-requests':
-            errorMessage = 'Too many attempts. Please try again later.';
             break;
         }
 
@@ -93,17 +95,19 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Register'),
+      ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  'Welcome Back',
+                  'Create Account',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
@@ -152,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
+                      return 'Please enter a password';
                     }
                     if (value.length < 6) {
                       return 'Password must be at least 6 characters';
@@ -160,9 +164,41 @@ class _LoginPageState extends State<LoginPage> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: !_isConfirmPasswordVisible,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isConfirmPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isConfirmPasswordVisible =
+                              !_isConfirmPasswordVisible;
+                        });
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please confirm your password';
+                    }
+                    if (value != _passwordController.text) {
+                      return 'Passwords do not match';
+                    }
+                    return null;
+                  },
+                ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: _isLoading ? null : _handleLogin,
+                  onPressed: _isLoading ? null : _handleRegister,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
@@ -175,52 +211,16 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         )
                       : const Text(
-                          'Login',
+                          'Register',
                           style: TextStyle(fontSize: 16),
                         ),
                 ),
                 const SizedBox(height: 16),
                 TextButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () {
-                          // Implement forgot password logic
-                          _auth
-                              .sendPasswordResetEmail(
-                            email: _emailController.text.trim(),
-                          )
-                              .then((_) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Password reset email sent. Please check your inbox.',
-                                ),
-                              ),
-                            );
-                          }).catchError((error) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Error sending password reset email. Please try again.',
-                                ),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          });
-                        },
-                  child: const Text('Forgot Password?'),
-                ),
-                const SizedBox(
-                  height: 50,
-                ),
-                TextButton(
-                  onPressed: () => {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const RegisterPage()))
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Navigate back to login page
                   },
-                  child: const Text('Dont have an account? Sign Up'),
+                  child: const Text('Already have an account? Login'),
                 ),
               ],
             ),
