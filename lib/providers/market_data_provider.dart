@@ -20,7 +20,7 @@ class MarketDataProvider with ChangeNotifier {
   Future<void> fetchMarketData() async {
     try {
       // Simulate network delay
-      // await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
 
       // In a real application, replace this with API fetching logic
       _marketData = {
