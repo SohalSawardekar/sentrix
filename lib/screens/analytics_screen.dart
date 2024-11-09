@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:share_plus/share_plus.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -8,12 +13,31 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
-  String _selectedTimeframe = '1D';
   String _selectedSymbol = 'AAPL';
   bool _showAdvancedMetrics = false;
 
-  final List<String> _timeframes = ['1D', '1W', '1M', '3M', '6M', '1Y', 'ALL'];
-  final List<String> _symbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN'];
+  final List<String> _symbols = [
+    'AAPL',
+    'GOOGL',
+    'AMZN',
+    'MSFT',
+    'TSLA',
+    'META',
+    'NFLX',
+    'NVDA',
+    'INTC',
+    'AMD',
+    'BABA',
+    'ORCL',
+    'SAP',
+    'IBM',
+    'ADBE',
+    'CRM',
+    'CSCO',
+    'QCOM',
+    'AVGO',
+    'TXN'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -93,27 +117,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: _selectedTimeframe,
-                    decoration: const InputDecoration(
-                      labelText: 'Timeframe',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: _timeframes
-                        .map((timeframe) => DropdownMenuItem(
-                              value: timeframe,
-                              child: Text(timeframe),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _selectedTimeframe = value);
-                        _refreshData();
-                      }
-                    },
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -136,9 +139,74 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     print('Data refreshed');
   }
 
-  void _exportAnalytics() {
-    // Placeholder for export analytics logic
-    print('Exporting analytics data');
+  Future<void> _exportAnalytics() async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Fetch data from Firestore
+      final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('sentimentData')
+          .where('symbol', isEqualTo: _selectedSymbol)
+          .get();
+
+      // Convert the data to a List of Maps
+      final List<Map<String, dynamic>> analyticsData = querySnapshot.docs
+          .map((doc) => {
+                ...doc.data() as Map<String, dynamic>,
+                'id': doc.id,
+              })
+          .toList();
+
+      // Convert data to text format
+      String textData = 'Analytics Data for $_selectedSymbol\n\n';
+      for (var doc in analyticsData) {
+        textData += 'ID: ${doc['id']}\n';
+        doc.forEach((key, value) {
+          if (key != 'id') {
+            textData += '$key: $value\n';
+          }
+        });
+        textData += '\n'; // Add space between each record
+      }
+
+      // Get temporary directory
+      final directory = await getApplicationDocumentsDirectory();
+      final String fileName =
+          '${_selectedSymbol}_analytics_${DateTime.now().millisecondsSinceEpoch}.txt';
+      final File file = File('${directory.path}/$fileName');
+
+      // Write text data to file
+      await file.writeAsString(textData);
+
+      // Close loading indicator
+      Navigator.pop(context);
+
+      // Share the file
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        subject: 'Analytics Export - $_selectedSymbol',
+      );
+    } catch (e) {
+      // Close loading indicator if it's showing
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Export failed: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showAnalyticsSettings() {
