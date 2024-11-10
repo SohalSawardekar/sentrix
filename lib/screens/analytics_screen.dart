@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sentrix/screens/newspredict.dart';
+import 'package:sentrix/screens/sentimentOverview.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:share_plus/share_plus.dart';
@@ -216,19 +217,27 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   Widget _buildSentimentOverview() {
-    return const Card(
-      child: Padding(
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
         padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Sentiment Overview',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            Text(
-                'Overview of the overall sentiment trends for the selected symbol and timeframe.'),
-          ],
-        ),
+      ),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => Sentimentoverview(symbol: _selectedSymbol)),
+        );
+        print('Sentiment Overview clicked!');
+      },
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Sentiment Overview',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          SizedBox(height: 8),
+          Text(
+              'Overview of the overall sentiment trends for the selected symbol and timeframe.'),
+        ],
       ),
     );
   }
@@ -297,7 +306,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const Newspredict()),
+            MaterialPageRoute(
+                builder: (context) => Newspredict(symbol: _selectedSymbol)),
           );
           print('News Sentiment Breakdown button pressed');
         },
@@ -328,7 +338,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             Text('Social Media Impact',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
-            Text('Impact of social media sentiment on the selected symbol.'),
+            Text(
+                'Analyzing the impact of social media sentiment on stock prices.'),
           ],
         ),
       ),

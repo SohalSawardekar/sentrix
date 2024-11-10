@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sentrix/services/Sentimental_Analysis.dart';
 
 class Newspredict extends StatefulWidget {
-  const Newspredict({super.key});
+  const Newspredict({super.key, required String symbol});
 
   @override
   State<Newspredict> createState() => _NewspredictState();
