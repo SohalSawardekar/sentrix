@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sentrix/screens/newspredict.dart';
 import 'package:sentrix/screens/sentimentOverview.dart';
+import 'package:sentrix/screens/setting_screen.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:share_plus/share_plus.dart';
@@ -53,7 +54,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: _showAnalyticsSettings,
+            onPressed: () => {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()))
+            },
           ),
         ],
       ),

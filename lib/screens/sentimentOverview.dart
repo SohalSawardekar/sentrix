@@ -49,6 +49,7 @@ class _SentimentoverviewState extends State<Sentimentoverview> {
 
       if (currentSnapshot.exists) {
         _currentSentiment = currentSnapshot.data() as Map<String, dynamic>;
+        print(_currentSentiment);
       }
 
       // Fetch news highlights
