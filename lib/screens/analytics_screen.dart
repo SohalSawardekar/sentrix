@@ -55,8 +55,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const SettingsScreen()))
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const SettingsScreen()))
             },
           ),
         ],
@@ -229,7 +231,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => Sentimentoverview(symbol: _selectedSymbol)),
+              builder: (context) => SentimentOverview(
+                    symbol: _selectedSymbol,
+                  )),
         );
         print('Sentiment Overview clicked!');
       },

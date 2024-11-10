@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sentrix/services/Sentimental_Analysis.dart';
+import 'dart:math';
 
 class Newspredict extends StatefulWidget {
   const Newspredict({super.key, required String symbol});
@@ -10,12 +10,12 @@ class Newspredict extends StatefulWidget {
 
 class _NewspredictState extends State<Newspredict> {
   final TextEditingController _textController = TextEditingController();
-  String? _sentimentScore;
-  String? _sentimentMagnitude;
+  String _sentimentScore = '0.0'; // Initial sentiment score
+  String _sentimentMagnitude = ''; // Initial sentiment magnitude
   bool _isLoading = false;
 
-  // Modify this function to use local emulator if needed
-  Future<void> _analyzeSentiment() async {
+  // Function to set random sentiment values
+  void _analyzeSentiment() {
     if (_textController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter some text to analyze')),
@@ -24,35 +24,15 @@ class _NewspredictState extends State<Newspredict> {
     }
 
     setState(() {
-      _isLoading = true;
+      // Generate random sentiment score between 0.3 and 0.7
+      final random = Random();
+      _sentimentScore =
+          (0.3 + random.nextDouble() * (0.7 - 0.3)).toStringAsFixed(2);
+
+      // Randomly select sentiment magnitude
+      const magnitudes = ['Positive', 'Negative', 'Neutral'];
+      _sentimentMagnitude = magnitudes[random.nextInt(magnitudes.length)];
     });
-
-    try {
-      final result = await analyzeSentiment(_textController.text);
-
-      setState(() {
-        // Safely handle result and check for 'error' in the response
-        if (result['error'] != null) {
-          _sentimentScore = 'N/A';
-          _sentimentMagnitude = 'N/A';
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${result['error']}')),
-          );
-        } else {
-          _sentimentScore = result['score']?.toString() ?? 'N/A';
-          _sentimentMagnitude = result['magnitude']?.toString() ?? 'N/A';
-        }
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    }
   }
 
   @override
@@ -83,7 +63,7 @@ class _NewspredictState extends State<Newspredict> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _analyzeSentiment,
+                onPressed: _analyzeSentiment,
                 child: _isLoading
                     ? const SizedBox(
                         height: 20,
@@ -99,33 +79,27 @@ class _NewspredictState extends State<Newspredict> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            if (_isLoading)
-              const Center(child: CircularProgressIndicator())
-            else if (_sentimentScore != null && _sentimentMagnitude != null)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Sentiment Score: $_sentimentScore",
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "Sentiment Magnitude: $_sentimentMagnitude",
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildSentimentInterpretation(),
-                    ],
-                  ),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Sentiment Score: $_sentimentScore",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Sentiment Magnitude: $_sentimentMagnitude",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSentimentInterpretation(),
+                  ],
                 ),
-              )
-            else
-              const Text(
-                  "No analysis yet. Enter text and press 'Analyze Sentiment'."), // No data message
+              ),
+            ),
           ],
         ),
       ),
@@ -133,28 +107,20 @@ class _NewspredictState extends State<Newspredict> {
   }
 
   Widget _buildSentimentInterpretation() {
-    if (_sentimentScore == null) return const SizedBox.shrink();
-
-    double? score = double.tryParse(_sentimentScore!);
+    double? score = double.tryParse(_sentimentScore);
     if (score == null) return const SizedBox.shrink();
 
     String interpretation;
     Color color;
 
-    if (score > 0.5) {
-      interpretation = "Very Positive";
-      color = Colors.green;
-    } else if (score > 0) {
+    if (score >= 0.55) {
       interpretation = "Positive";
-      color = Colors.lightGreen;
-    } else if (score == 0) {
+      color = Colors.green;
+    } else if (score >= 0.45) {
       interpretation = "Neutral";
       color = Colors.grey;
-    } else if (score > -0.5) {
-      interpretation = "Negative";
-      color = Colors.orange;
     } else {
-      interpretation = "Very Negative";
+      interpretation = "Negative";
       color = Colors.red;
     }
 

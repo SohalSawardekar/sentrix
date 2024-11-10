@@ -103,6 +103,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ? Column(
                     children: [
                       const SizedBox(height: 50),
+                      Text(
+                        "Menu",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(height: 50),
                       _buildSidebarItem(
                         icon: Icons.trending_up,
                         label: 'Trends',

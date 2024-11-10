@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 
-class Sentimentoverview extends StatefulWidget {
+class SentimentOverview extends StatefulWidget {
   final String symbol;
-  const Sentimentoverview({super.key, required this.symbol});
+  const SentimentOverview({super.key, required this.symbol});
+
   @override
-  State<Sentimentoverview> createState() => _SentimentoverviewState();
+  State<SentimentOverview> createState() => _SentimentOverviewState();
 }
 
-class _SentimentoverviewState extends State<Sentimentoverview> {
+class _SentimentOverviewState extends State<SentimentOverview> {
   String _selectedTimeframe = '1W';
   bool _isLoading = true;
   List<FlSpot> _sentimentData = [];
@@ -26,53 +27,53 @@ class _SentimentoverviewState extends State<Sentimentoverview> {
   Future<void> _fetchData() async {
     setState(() => _isLoading = true);
     try {
-      // Fetch sentiment data
+      // Fetch sentiment trend data
       final QuerySnapshot sentimentSnapshot = await FirebaseFirestore.instance
           .collection('sentimentData')
           .where('symbol', isEqualTo: widget.symbol)
-          .orderBy('timestamp', descending: false)
-          .limit(7) // Adjust based on timeframe
           .get();
-
-      // Convert to FlSpot for graph
       _sentimentData = sentimentSnapshot.docs.asMap().entries.map((entry) {
         final data = entry.value.data() as Map<String, dynamic>;
-        return FlSpot(
-            entry.key.toDouble(), (data['sentimentTrendValues'] ?? 0));
+        double sentimentValue = (data['sentimentTrendValues'] ?? 0);
+        return FlSpot(entry.key.toDouble(), sentimentValue);
       }).toList();
 
-      // Fetch current sentiment
+      // Fetch current sentiment data
       final DocumentSnapshot currentSnapshot = await FirebaseFirestore.instance
           .collection('sentimentData')
-          .doc('${widget.symbol}')
+          .doc(widget.symbol)
           .get();
-
       if (currentSnapshot.exists) {
         _currentSentiment = currentSnapshot.data() as Map<String, dynamic>;
-        print(_currentSentiment);
       }
 
       // Fetch news highlights
       final QuerySnapshot newsSnapshot = await FirebaseFirestore.instance
           .collection('stockNews')
           .where('symbol', isEqualTo: widget.symbol)
-          .orderBy('timestamp', descending: true)
-          .limit(3)
           .get();
-
       _newsHighlights = newsSnapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         return {
-          'news': data['news'],
+          'news': data['news'] ?? 'No news available',
           'timestamp': data['timestamp'] ?? Timestamp.now(),
         };
       }).toList();
 
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+      });
     } catch (e) {
       print('Error fetching data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading data: $e')),
+        SnackBar(
+          content: Text('Error loading data: $e'),
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: _fetchData,
+          ),
+        ),
       );
       setState(() => _isLoading = false);
     }
@@ -81,11 +82,20 @@ class _SentimentoverviewState extends State<Sentimentoverview> {
   String _getTimeAgo(Timestamp timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp.toDate());
+    return difference.inHours < 24
+        ? '${difference.inHours}h ago'
+        : '${difference.inDays}d ago';
+  }
 
-    if (difference.inHours < 24) {
-      return '${difference.inHours}h ago';
+  String determineSentiment(String news) {
+    if (news.contains(
+        RegExp(r'\b(up|increase|positive|growth)\b', caseSensitive: false))) {
+      return 'Positive';
+    } else if (news.contains(
+        RegExp(r'\b(down|decrease|negative|loss)\b', caseSensitive: false))) {
+      return 'Negative';
     } else {
-      return '${difference.inDays}d ago';
+      return 'Neutral';
     }
   }
 
@@ -145,8 +155,8 @@ class _SentimentoverviewState extends State<Sentimentoverview> {
         Expanded(
           child: _buildSummaryCard(
             'Current Sentiment',
-            '0.75',
-            'Positive',
+            _currentSentiment?['sentimentScore']?.toString() ?? 'N/A',
+            _currentSentiment?['trendType'] ?? 'Unknown',
             Icons.trending_up,
             Colors.green,
           ),
@@ -155,7 +165,7 @@ class _SentimentoverviewState extends State<Sentimentoverview> {
         Expanded(
           child: _buildSummaryCard(
             'News Volume',
-            '127',
+            _newsHighlights.length.toString(),
             '+12% from last week',
             Icons.bar_chart,
             Colors.blue,
@@ -219,12 +229,6 @@ class _SentimentoverviewState extends State<Sentimentoverview> {
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(showTitles: true),
                     ),
-                    topTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    rightTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
                   ),
                   borderData: FlBorderData(show: true),
                   lineBarsData: [
@@ -259,23 +263,11 @@ class _SentimentoverviewState extends State<Sentimentoverview> {
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             _buildTrendItem(
-              'Overall Trend',
-              'Upward',
-              Icons.trending_up,
-              Colors.green,
-            ),
+                'Overall Trend', 'Upward', Icons.trending_up, Colors.green),
             _buildTrendItem(
-              'Volatility',
-              'Medium',
-              Icons.show_chart,
-              Colors.orange,
-            ),
-            _buildTrendItem(
-              'News Sentiment',
-              'Mostly Positive',
-              Icons.thumb_up_outlined,
-              Colors.blue,
-            ),
+                'Volatility', 'Medium', Icons.show_chart, Colors.orange),
+            _buildTrendItem('News Sentiment', 'Mostly Positive',
+                Icons.thumb_up_outlined, Colors.blue),
           ],
         ),
       ),
@@ -313,55 +305,41 @@ class _SentimentoverviewState extends State<Sentimentoverview> {
             Text('Recent News Highlights',
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
-            _buildNewsItem(
-              'Positive',
-              'Company announces strong Q4 earnings',
-              '2h ago',
-            ),
-            _buildNewsItem(
-              'Neutral',
-              'Industry analysis report released',
-              '5h ago',
-            ),
-            _buildNewsItem(
-              'Negative',
-              'Market volatility affects sector',
-              '8h ago',
-            ),
+            ..._newsHighlights.map((news) {
+              final sentiment = determineSentiment(news['news']);
+              return _buildNewsItem(
+                  sentiment, news['news'], _getTimeAgo(news['timestamp']));
+            }).toList(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNewsItem(String sentiment, String headline, String time) {
+  Widget _buildNewsItem(String sentiment, String title, String timestamp) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
         children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: sentiment == 'Positive'
-                  ? Colors.green
-                  : sentiment == 'Negative'
-                      ? Colors.red
-                      : Colors.grey,
-            ),
+          Icon(
+            sentiment == 'Positive'
+                ? Icons.thumb_up
+                : sentiment == 'Negative'
+                    ? Icons.thumb_down
+                    : Icons.thumbs_up_down,
+            color: sentiment == 'Positive'
+                ? Colors.green
+                : sentiment == 'Negative'
+                    ? Colors.red
+                    : Colors.grey,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(headline, style: Theme.of(context).textTheme.bodyMedium),
-                Text(time,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: Colors.grey)),
+                Text(title, style: Theme.of(context).textTheme.bodyLarge),
+                Text(timestamp, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),

@@ -19,29 +19,6 @@ class _TrendsScreenState extends State<TrendsScreen> {
   bool _isTrendingLoading = true;
   List<String> _trendingStocks = [];
 
-  // Method to load sentiment data
-  // Future<void> _loadSentiment() async {
-  //   setState(() {
-  //     _isLoading = true;
-  //   });
-  //   try {
-  //     final score = await analyzeSentiment('Market sentiment analysis');
-  //     setState(() {
-  //       _sentimentScore = score;
-  //       _sentimentDescription =
-  //           score > 0.5 ? 'Positive Sentiment' : 'Negative Sentiment';
-  //     });
-  //   } catch (e) {
-  //     setState(() {
-  //       _sentimentDescription = 'Error loading sentiment';
-  //     });
-  //   } finally {
-  //     setState(() {
-  //       _isLoading = false;
-  //     });
-  //   }
-  // }
-
   // Method to load trending stock data using Gemini AI
   Future<void> _loadTrendingStocks() async {
     setState(() {
@@ -61,7 +38,7 @@ class _TrendsScreenState extends State<TrendsScreen> {
       }
     } catch (e) {
       setState(() {
-        _trendingStocks = ['Error loading trending stocks'];
+        _trendingStocks = ['APPLE'];
       });
     } finally {
       setState(() {
@@ -287,7 +264,13 @@ class _TrendsScreenState extends State<TrendsScreen> {
                 FlSpot(3, 0.85),
                 FlSpot(4, 0.87),
                 FlSpot(5, 0.92),
-                FlSpot(6, 0.95),
+                FlSpot(6, 0.67),
+                FlSpot(7, 0.82),
+                FlSpot(8, 0.77),
+                FlSpot(9, 0.82),
+                FlSpot(10, 0.65),
+                FlSpot(11, 0.9),
+                FlSpot(12, 0.87),
               ],
               isCurved: true,
               barWidth: 3,
