@@ -1,25 +1,28 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:cloud_functions/cloud_functions.dart';
 
-class SentimentAnalysisService {
-  final String _apiKey =
-      '68b32d2d512809ee0e88960dca402b7708e9705acfdfd59fb0853d8a';
+Future<Map<String, dynamic>> analyzeSentiment(String text) async {
+  final HttpsCallable callable =
+      FirebaseFunctions.instance.httpsCallable('analyzeSentiment');
+  try {
+    final response = await callable.call(<String, dynamic>{
+      'text': text,
+    });
 
-  Future<double> analyzeSentiment(String text) async {
-    final response = await http.post(
-      Uri.parse('https://api.textrazor.com/'),
-      headers: {
-        'x-textrazor-key': _apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'text': text}),
-    );
+    // Ensure the response contains score and magnitude
+    final sentimentScore = response.data['score'];
+    final sentimentMagnitude = response.data['magnitude'];
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['response']['sentimentScore'];
-    } else {
-      throw Exception('Failed to analyze sentiment');
-    }
+    return {
+      'score': sentimentScore,
+      'magnitude': sentimentMagnitude,
+      'error': null, // Add error as null if no error
+    };
+  } catch (e) {
+    // Handle any error and return it
+    return {
+      'score': null,
+      'magnitude': null,
+      'error': e.toString(),
+    };
   }
 }
